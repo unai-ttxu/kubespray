@@ -3,46 +3,43 @@
   command: cp -f /etc/resolv.conf "{{ resolvconffile }}"
   when: ansible_os_family in ["Flatcar Container Linux by Kinvolk"]
 
-- name: Add domain/search/nameservers/options to resolv.conf
-  blockinfile:
-    path: "{{ resolvconffile }}"
-    block: |-
-      {% for item in [domainentry] + [searchentries] + nameserverentries.split(',') -%}
-      {{ item }}
-      {% endfor %}
-      options ndots:{{ ndots }}
-      options timeout:2
-      options attempts:2
-    state: present
-    insertbefore: BOF
-    create: yes
-    backup: yes
-    marker: "# Ansible entries {mark}"
+- name: Configure interface configuration file to manage resolv.configuration
+  lineinfile:
+    dest: /etc/sysconfig/network-scripts/ifcfg-{{ ansible_default_ipv4.interface }}
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.line }}'
+  loop:
+    - regexp: '^DOMAIN=.*'
+      line: 'DOMAIN="{{ domainentry }}"'
+    - regexp: '^DNS1=.*'
+      line: 'DNS1="127.0.0.1"'
+    - regexp: '^PEERDNS=.*'
+      line: 'PEERDNS="no"'
+    - regexp: '^SEARCH=.*'
+      line: 'SEARCH="{{ searchentries }}"'
   notify: Preinstall | propagate resolvconf to k8s components
 
-- name: Remove search/domain/nameserver options before block
+- name: Configure interface configuration file to manage resolv.conf DNS
+  lineinfile:
+    dest: /etc/sysconfig/network-scripts/ifcfg-{{ ansible_default_ipv4.interface }}
+    regexp: '^DNS{{ index }}=.*'
+    line: 'DNS{{ index }}="{{ item }}"'
+  loop: "{{ (nodelocaldns_ip|d([]) + coredns_server|d([]) + nameservers|d([]) + cloud_resolver|d([])) | unique }}"
+  loop_control:
+    index_var: index
+  notify: Preinstall | propagate resolvconf to k8s components
+
+- name: Configure interface configuration file to disable not needed parameters
   replace:
-    dest: "{{ item[0] }}"
-    regexp: '^{{ item[1] }}[^#]*(?=# Ansible entries BEGIN)'
-    backup: yes
-    follow: yes
-  with_nested:
-    - "{{ [resolvconffile, base|default(''), head|default('')] | difference(['']) }}"
-    - [ 'search ', 'nameserver ', 'domain ', 'options ' ]
+    path: /etc/sysconfig/network-scripts/ifcfg-{{ ansible_default_ipv4.interface }}
+    regexp: '{{ item.regexp }}'
+    replace: '{{ item.line }}'
+  loop:
+    - regexp: '^(IPV6.*)'
+      line: '#\1'
+    - regexp: '^(NM_CONTROLLED=.*)'
+      line: '#\1'
   notify: Preinstall | propagate resolvconf to k8s components
-
-- name: Remove search/domain/nameserver options after block
-  replace:
-    dest: "{{ item[0] }}"
-    regexp: '(# Ansible entries END\n(?:(?!^{{ item[1] }}).*\n)*)(?:^{{ item[1] }}.*\n?)+'
-    replace: '\1'
-    backup: yes
-    follow: yes
-  with_nested:
-    - "{{ [resolvconffile, base|default(''), head|default('')] | difference(['']) }}"
-    - [ 'search ', 'nameserver ', 'domain ', 'options ' ]
-  notify: Preinstall | propagate resolvconf to k8s components
-
 
 - name: get temporary resolveconf cloud init file content
   command: cat {{ resolvconffile }}

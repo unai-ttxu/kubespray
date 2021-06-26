@@ -25,7 +25,7 @@
     - dns_mode != 'none'
     - resolvconf_mode == 'host_resolvconf'
     - systemd_resolved_enabled.rc != 0
-    - not is_fedora_coreos
+    - ansible_os_family == "RedHat"
   tags:
     - bootstrap-os
     - resolvconf

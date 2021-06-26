@@ -121,9 +121,9 @@
 - name: generate search domains to resolvconf
   set_fact:
     searchentries:
-      search {{ ([ 'default.svc.' + dns_domain, 'svc.' + dns_domain ] + searchdomains|default([])) | join(' ') }}
+      "{{ ([ 'default.svc.' + dns_domain, 'svc.' + dns_domain ] + searchdomains|default([])) | join(' ') }}"
     domainentry:
-      domain {{ dns_domain }}
+      "{{ dns_domain }}"
     supersede_search:
       supersede domain-search "{{ ([ 'default.svc.' + dns_domain, 'svc.' + dns_domain ] + searchdomains|default([])) | join('", "') }}";
     supersede_domain:
@@ -146,8 +146,6 @@
 
 - name: generate nameservers to resolvconf
   set_fact:
-    nameserverentries:
-      nameserver {{ ( coredns_server|d([]) + nameservers|d([]) + cloud_resolver|d([])) | unique | join(',nameserver ') }}
     supersede_nameserver:
       supersede domain-name-servers {{ ( coredns_server|d([]) + nameservers|d([]) + cloud_resolver|d([])) | unique | join(', ') }};
 
