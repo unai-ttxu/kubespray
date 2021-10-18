@@ -50,7 +50,7 @@ image_arch: "{{host_architecture | default('amd64')}}"
 
 # Versions
 kubeadm_version: "{{ kube_version }}"
-etcd_version: v3.5.1
+etcd_version: v3.4.13
 crun_version: 0.19
 kata_containers_version: 1.12.1
 
@@ -413,8 +413,8 @@ etcd_binary_checksums:
   # Etcd does not have arm32 builds at the moment, having some dummy value is
   # required to avoid "no attribute" error
   arm: 0
-  arm64: 86203022e23d7368bac23d96095270dc6300f356ea882e435926a9effd7e5f0e
-  amd64: 728a14914217ce60de2e1299fc1a2c2c5564e7ffd0d9dadf3f5073103ab619b4
+  arm64: 1934ebb9f9f6501f706111b78e5e321a7ff8d7792d3d96a76e2d01874e42a300
+  amd64: 2ac029e47bab752dacdb7b30032f230f49e2f457cbc32e8f555c2210bb5ff107
 cni_binary_checksums:
   arm: 909e800d01cc61ffa26f2629e4a202a58d727e6ccaabd0310ef18d2b1e00943c
   arm64: ef17764ffd6cdcb16d76401bac1db6acc050c9b088f1be5efa0e094ea3b01df0
