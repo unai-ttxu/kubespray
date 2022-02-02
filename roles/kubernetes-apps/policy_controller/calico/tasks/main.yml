@@ -13,10 +13,10 @@
     src: "{{ item.file }}.j2"
     dest: "{{ kube_config_dir }}/{{ item.file }}"
   with_items:
-    - {name: calico-kube-controllers, file: calico-kube-controllers.yml, type: deployment}
     - {name: calico-kube-controllers, file: calico-kube-sa.yml, type: sa}
     - {name: calico-kube-controllers, file: calico-kube-cr.yml, type: clusterrole}
     - {name: calico-kube-controllers, file: calico-kube-crb.yml, type: clusterrolebinding}
+    - {name: calico-kube-controllers, file: calico-kube-controllers.yml, type: deployment}
   register: calico_kube_manifests
   when:
     - inventory_hostname == groups['kube_control_plane'][0]
