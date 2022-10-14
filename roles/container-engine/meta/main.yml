@@ -43,6 +43,15 @@ dependencies:
       - container-engine
       - crio
 
+  - role: container-engine/containerd-common
+    when: >
+      container_manager == 'containerd' or
+      container_manager == 'docker'
+    tags:
+      - container-engine
+      - containerd
+      - docker
+
   - role: container-engine/containerd
     when:
       - container_manager == 'containerd'
