@@ -36,6 +36,10 @@
     name: "{{ item }}"
     enabled: false
     state: stopped
+  register: result
+  failed_when:
+    - result.failed
+    - "'Could not find the requested service' not in (result.msg | default(''))"
   loop:
     - docker
     - docker.socket
@@ -97,9 +101,35 @@
     - /etc/systemd/system/docker.service
     - /etc/systemd/system/containerd.service
     - /etc/systemd/system/containerd.service.d
-    - /var/lib/docker
     - /etc/docker
   ignore_errors: true  # noqa ignore-errors
+
+- name: Docker | Get /var/lib/docker files
+  find:
+    paths: /var/lib/docker
+    hidden: true
+    file_type: any
+  register: var_lib_docker_content
+
+- name: Docker | Remove /var/lib/docker files
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ var_lib_docker_content.files }}"
+
+- name: Docker | Remove containerd configuration files
+  file:
+    name: /var/lib/containerd
+    state: absent
+  when: docker_packages_list|length>0
+
+- name: Docker | Link /var/lib/containerd to /var/lib/docker
+  file:
+    src: /var/lib/docker
+    dest: "/var/lib/containerd"
+    state: link
+    force: yes
+  when: docker_packages_list|length>0
 
 - name: Docker | systemctl daemon-reload  # noqa 503
   systemd:
