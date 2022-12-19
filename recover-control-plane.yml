@@ -10,24 +10,24 @@
   environment: "{{ proxy_disable_env }}"
   roles:
     - { role: kubespray-defaults}
-    - { role: bastion-ssh-config, tags: ["localhost", "bastion"]}
+    - { role: bastion-ssh-config, tags: ["localhost", "bastion"] }
 
 - hosts: etcd[0]
   environment: "{{ proxy_disable_env }}"
   roles:
-    - { role: kubespray-defaults}
-    - { role: recover_control_plane/etcd, when: "not etcd_kubeadm_enabled|default(false)" }
+    - { role: kubespray-defaults, when: "'broken_etcd' in groups and groups['broken_etcd']" }
+    - { role: recover_control_plane/etcd, when: "'broken_etcd' in groups and groups['broken_etcd']" }
 
 - hosts: kube_control_plane[0]
   environment: "{{ proxy_disable_env }}"
   roles:
-    - { role: kubespray-defaults}
-    - { role: recover_control_plane/control-plane }
+    - { role: kubespray-defaults, when: "'broken_kube_control_plane' in groups and groups['broken_kube_control_plane']" }
+    - { role: recover_control_plane/control-plane, when: "'broken_kube_control_plane' in groups and groups['broken_kube_control_plane']" }
 
 - import_playbook: cluster.yml
 
 - hosts: kube_control_plane
   environment: "{{ proxy_disable_env }}"
   roles:
-    - { role: kubespray-defaults}
+    - { role: kubespray-defaults }
     - { role: recover_control_plane/post-recover }
