@@ -8,14 +8,6 @@
     - dns_mode in ['coredns', 'coredns_dual']
     - inventory_hostname == groups['kube_control_plane'][0]
 
-- name: Kubernetes Apps | Register coredns service annotation `createdby`
-  command: "{{ kubectl }} get svc -n kube-system coredns -o jsonpath='{ .metadata.annotations.createdby }'"
-  register: createdby_annotation_svc
-  changed_when: false
-  ignore_errors: true  # noqa ignore-errors
-  when:
-    - dns_mode in ['coredns', 'coredns_dual']
-    - inventory_hostname == groups['kube_control_plane'][0]
 
 - name: Kubernetes Apps | Delete kubeadm CoreDNS
   kube:
@@ -29,6 +21,9 @@
     - inventory_hostname == groups['kube_control_plane'][0]
     - createdby_annotation_deploy.stdout != 'kubespray'
 
+# kube-dns service is always created by kubeadm. We should delete it always as well.
+# In case we are cleaning up DNS after an upgrade, CoreDNS is already deployed by Kubespray,
+# so we should not make this deletion dependent on the createdby annotation
 - name: Kubernetes Apps | Delete kubeadm Kube-DNS service
   kube:
     name: "kube-dns"
@@ -39,4 +34,3 @@
   when:
     - dns_mode in ['coredns', 'coredns_dual']
     - inventory_hostname == groups['kube_control_plane'][0]
-    - createdby_annotation_svc.stdout != 'kubespray'
