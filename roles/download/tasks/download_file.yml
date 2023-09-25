@@ -157,7 +157,7 @@
   - name: Stop if file not in cache on ansible host when download_force_cache=true or download_force_cache_nodes=true
     assert:
       that: file_is_cached
-      msg: "File cache file {{ file_path_cached }} not found for {{ 'on localhost' if download_force_cache}}"
+      msg: "File cache file {{ file_path_cached }} not found{{ ' on localhost' if download_force_cache }}"
     when:
       - download_force_cache or download_force_cache_nodes
       - not download_run_once

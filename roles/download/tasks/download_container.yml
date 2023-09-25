@@ -59,7 +59,7 @@
     - name: Stop if image not in cache on ansible host when download_force_cache=true or download_force_cache_nodes=true
       assert:
         that: image_is_cached
-        msg: "Image cache file {{ image_path_cached }} not found for {{ image_reponame }}{{ ' on localhost' if download_force_cache}}"
+        msg: "Image cache file {{ image_path_cached }} not found for {{ image_reponame }}{{ ' on localhost' if download_force_cache }}"
       when:
         - download_force_cache or download_force_cache_nodes
         - not download_run_once
