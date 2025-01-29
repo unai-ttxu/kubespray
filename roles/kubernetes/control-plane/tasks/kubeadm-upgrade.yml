@@ -9,6 +9,15 @@
   delay: 5
   until: _result.status == 200
 
+- name: Kubeadm | Update kubeadm-config configmap
+  kube:
+    kubectl: "{{ bin_dir }}/kubectl"
+    filename: "{{ kube_config_dir }}/kubeadm-config.yaml"
+    state: "latest"
+  when:
+    - kubeadm_upgrade_reconfigure
+    - inventory_hostname == first_kube_control_plane
+
 - name: Kubeadm | Upgrade first master
   command: >-
     timeout -k 600s 600s

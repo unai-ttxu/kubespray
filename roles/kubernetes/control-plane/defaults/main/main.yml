@@ -233,6 +233,11 @@ auto_renew_certificates_systemd_calendar: "Mon *-*-1,2,3,4,5,6,7 03:00:00"
 # we can opt out from the default behavior by setting kubeadm_upgrade_auto_cert_renewal to false
 kubeadm_upgrade_auto_cert_renewal: true
 
+# Enable control-plane reconfiguration during kubeadm upgrade.
+# This simulates the use of the deprecated --config flag, ensuring that kubeadm uses the updated configuration
+# from the kubeadm-config.yaml file. See https://github.com/kubernetes-sigs/kubespray/issues/11552
+kubeadm_upgrade_reconfigure: false
+
 # Bash alias of kubectl to interact with Kubernetes cluster much easier
 # kubectl_alias: k
 
