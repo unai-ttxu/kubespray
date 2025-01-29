@@ -10,10 +10,20 @@
   until: _result.status == 200
 
 - name: Kubeadm | Update kubeadm-config configmap
-  kube:
-    kubectl: "{{ bin_dir }}/kubectl"
-    filename: "{{ kube_config_dir }}/kubeadm-config.yaml"
-    state: "latest"
+  block:
+    - name: Kubeadm | Get kubeadm-config.yaml config content
+      slurp:
+        src: "{{ kube_config_dir }}/kubeadm-config.yaml"
+      register: kubeadm_config_file_content
+
+    - name: Kubeadm | Update kubeadm-config configmap
+      command: >
+        {{ kubectl }} create configmap -n kube-system kubeadm-config
+        --from-file=ClusterConfiguration={{ kubeadm_cm_content }}
+      vars:
+        kubeadm_cm_content: "{{ kubeadm_config_file_content.content | b64decode | from_yaml_all
+                                  | selectattr('kind', 'equalto', 'ClusterConfiguration') | first
+                                  | combine({'apiVersion': None, 'kind': None}, recursive=True) | to_yaml }}"
   when:
     - kubeadm_upgrade_reconfigure
     - inventory_hostname == first_kube_control_plane
